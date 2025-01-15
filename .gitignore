@@ -1,0 +1,48 @@
+# data
+data/raw/
+data/processed/
+
+# checkpoints
+checkpoints/
+outputs/
+
+# wandb
+wandb/
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# env
+.env
+.venv/
+venv/
+env/
+
+# ide
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# os
+.DS_Store
+Thumbs.db
+
+# jupyter
+.ipynb_checkpoints/
+
+# latex build
+reports/latex_report/*.aux
+reports/latex_report/*.log
+reports/latex_report/*.out
+reports/latex_report/*.bbl
+reports/latex_report/*.blg
+reports/latex_report/*.synctex.gz
+reports/latex_report/*.fls
+reports/latex_report/*.fdb_latexmk
