@@ -1,0 +1,33 @@
+# training hyperparameters
+
+model:
+  name: "llava-hf/llava-1.5-7b-hf"
+  max_length: 512
+  image_size: 336
+
+training:
+  num_epochs: 5
+  batch_size: 4
+  gradient_accumulation_steps: 4
+  learning_rate: 2.0e-4
+  weight_decay: 0.01
+  warmup_ratio: 0.03
+  lr_scheduler_type: "cosine"
+  max_grad_norm: 1.0
+  fp16: true
+
+evaluation:
+  eval_steps: 50
+  eval_batch_size: 8
+  generation_max_length: 128
+
+logging:
+  log_steps: 10
+  save_steps: 100
+  save_total_limit: 3
+  wandb_project: "medical-vqa-qlora"
+
+paths:
+  data_dir: "data/raw"
+  output_dir: "checkpoints"
+  processed_dir: "data/processed"
