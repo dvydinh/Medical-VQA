@@ -1,0 +1,10 @@
+\section{Introduction}
+\label{sec:introduction}
+
+The interpretation of medical images---including X-rays, CT scans, and MRI---is a critical component of clinical workflows. Radiologists face increasing workloads, and automated systems that can assist in image interpretation have the potential to improve diagnostic efficiency \cite{lau2018dataset}. Medical VQA, which requires a model to answer natural language questions grounded in clinical images, represents a meaningful step toward such assistive systems.
+
+Recent advances in Vision-Language Models (VLMs) such as LLaVA \cite{liu2023visual, liu2024improved}, BLIP-2 \cite{li2023blip2}, and their biomedical adaptations \cite{li2023llavamed} have demonstrated that large-scale pre-training followed by instruction tuning can produce models capable of multi-modal reasoning. However, these models typically contain billions of parameters. Full fine-tuning on domain-specific data requires substantial GPU resources---often 40 GB or more of VRAM---which is impractical for most clinical institutions.
+
+Parameter-Efficient Fine-Tuning (PEFT) methods, particularly Low-Rank Adaptation (LoRA) \cite{hu2022lora} and its quantized variant QLoRA \cite{dettmers2024qlora}, offer a solution by freezing the majority of model weights and training only small adapter matrices injected into attention layers. This work applies QLoRA to fine-tune LLaVA-1.5-7B on the VQA-RAD dataset and evaluates whether this compression preserves the model's capacity for clinical visual reasoning.
+
+The central research question is: \textit{Does parameter-efficient fine-tuning with 4-bit quantization degrade the clinical reasoning performance of a vision-language model on radiology VQA tasks?}

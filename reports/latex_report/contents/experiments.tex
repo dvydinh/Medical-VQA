@@ -1,0 +1,49 @@
+\section{Experiments and Results}
+\label{sec:experiments}
+
+\subsection{Experimental Setup}
+
+\textbf{Dataset.} The VQA-RAD dataset \cite{lau2018dataset} contains 315 radiology images across multiple modalities (X-ray, CT, MRI) with 3,515 clinician-generated QA pairs. The standard train/test split provided by the dataset authors is used.
+
+\textbf{Hardware.} All experiments are conducted on a single [PLACEHOLDER GPU] with [PLACEHOLDER] GB VRAM. Training is performed in mixed precision (FP16).
+
+\textbf{Evaluation Metrics.} Closed-ended questions are evaluated using Exact Match (EM) accuracy. Open-ended questions are evaluated using BLEU-1 through BLEU-4 and ROUGE-L F1 scores.
+
+\subsection{Results}
+
+% ===== PLACEHOLDER: fill in after running experiments =====
+\begin{table}[htbp]
+\caption{Evaluation results on the VQA-RAD test set.}
+\label{tab:results}
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{Metric} & \textbf{QLoRA (ours)} & \textbf{Zero-shot} \\
+\midrule
+Closed EM (\%)       & [PLACEHOLDER] & [PLACEHOLDER] \\
+Open BLEU-1          & [PLACEHOLDER] & [PLACEHOLDER] \\
+Open BLEU-4          & [PLACEHOLDER] & [PLACEHOLDER] \\
+Open ROUGE-L         & [PLACEHOLDER] & [PLACEHOLDER] \\
+\midrule
+Trainable params     & [PLACEHOLDER] & N/A \\
+Training time        & [PLACEHOLDER] & N/A \\
+Peak VRAM (GB)       & [PLACEHOLDER] & [PLACEHOLDER] \\
+\bottomrule
+\end{tabular}
+\end{table}
+% ===== END PLACEHOLDER =====
+
+Table~\ref{tab:results} presents the comparison between the QLoRA fine-tuned model and the zero-shot baseline (LLaVA-1.5-7B without fine-tuning). [PLACEHOLDER: discuss results interpretation here---improvements on closed-ended EM, open-ended BLEU/ROUGE, and resource consumption.]
+
+% ===== PLACEHOLDER: add loss curve figure after training =====
+% \begin{figure}[htbp]
+% \centering
+% \includegraphics[width=\columnwidth]{figures/loss_curve.png}
+% \caption{Training and validation loss curves over 5 epochs.}
+% \label{fig:loss}
+% \end{figure}
+% ===== END PLACEHOLDER =====
+
+\subsection{Analysis}
+
+[PLACEHOLDER: Include analysis of where the model succeeds and fails. Discuss performance differences between imaging modalities (X-ray vs. CT vs. MRI) and question categories (presence, modality, attribute) if the data supports such breakdown.]

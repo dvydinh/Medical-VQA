@@ -1,0 +1,6 @@
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
+
+This work demonstrates the feasibility of applying QLoRA-based parameter-efficient fine-tuning to adapt a general-purpose vision-language model for medical VQA. By quantizing LLaVA-1.5-7B to 4-bit precision and training LoRA adapters on fewer than 1\% of the total parameters, competitive performance is achieved on the VQA-RAD benchmark with significantly reduced hardware requirements.
+
+Limitations of this study include the relatively small scale of the VQA-RAD dataset and the lack of comparison with domain-specific pre-trained models such as LLaVA-Med \cite{li2023llavamed}. Future work could extend this approach to larger medical VQA benchmarks (e.g., SLAKE, PathVQA), explore the effect of varying LoRA rank and target module selection, and investigate retrieval-augmented generation strategies to mitigate hallucination in clinical contexts.

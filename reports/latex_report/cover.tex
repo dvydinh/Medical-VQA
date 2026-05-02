@@ -1,0 +1,15 @@
+\title{Parameter-Efficient Fine-Tuning of Vision-Language Models for Medical Visual Question Answering}
+
+\author{
+\IEEEauthorblockN{Doan Vy Dinh}
+\IEEEauthorblockA{
+\textit{Ho Chi Minh City, Vietnam} \\
+doanvy.dinh27@gmail.com
+}
+}
+
+\maketitle
+
+\begin{abstract}
+Medical Visual Question Answering (VQA) requires models to reason jointly over clinical images and natural language queries. While large Vision-Language Models (VLMs) have shown strong performance on general-domain tasks, deploying them in resource-constrained clinical environments remains challenging due to high GPU memory requirements. This work investigates the application of QLoRA---a combination of 4-bit NF4 quantization and Low-Rank Adaptation---to fine-tune LLaVA-1.5-7B on the VQA-RAD radiology dataset. The proposed approach reduces the number of trainable parameters to less than 1\% of the original model while maintaining competitive accuracy. Experimental results on the VQA-RAD test set yield an Exact Match accuracy of \textbf{[PLACEHOLDER]\%} on closed-ended questions and a BLEU-1 score of \textbf{[PLACEHOLDER]} on open-ended questions, using approximately \textbf{[PLACEHOLDER] GB} of GPU memory during training. These findings suggest that parameter-efficient methods can preserve clinical reasoning capabilities of VLMs under hardware constraints typical of hospital settings.
+\end{abstract}

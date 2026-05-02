@@ -1,0 +1,22 @@
+\section{Methodology}
+\label{sec:methodology}
+
+\subsection{Task Formulation}
+
+Given a radiology image $I$ and a natural language question $Q$, the model produces an answer $A$. The training objective minimizes the cross-entropy loss over the answer tokens:
+\begin{equation}
+\mathcal{L} = -\sum_{t=1}^{|A|} \log P(a_t \mid I, Q, a_{<t}; \theta)
+\end{equation}
+where $\theta$ represents the model parameters and loss masking is applied such that the question tokens do not contribute to the gradient signal. This ensures the model is trained exclusively on generating clinically relevant answers.
+
+\subsection{Model Architecture}
+
+The base model is LLaVA-1.5-7B \cite{liu2024improved}, which consists of three components: (1) a CLIP ViT-L/14 vision encoder operating at 336$\times$336 resolution, (2) a two-layer MLP projector mapping visual features into the language model's embedding space, and (3) a Vicuna-7B language model. During fine-tuning, the vision encoder is frozen. LoRA adapters are injected into the query ($W_q$), key ($W_k$), value ($W_v$), and output ($W_o$) projection matrices of the language model's attention layers.
+
+\subsection{Quantization and Adapter Configuration}
+
+The language model backbone is loaded in 4-bit NF4 precision using double quantization. LoRA adapters are configured with rank $r = 16$, scaling factor $\alpha = 32$, and dropout rate of 0.05. This configuration results in approximately [PLACEHOLDER] trainable parameters, representing less than 1\% of the total model parameters.
+
+\subsection{Training Procedure}
+
+Training uses the AdamW optimizer with a cosine learning rate schedule, peak learning rate of $2 \times 10^{-4}$, and a warmup ratio of 3\%. Gradient accumulation is applied with an effective batch size of 16. The model is trained for 5 epochs with gradient clipping at norm 1.0.
