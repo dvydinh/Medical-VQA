@@ -59,37 +59,34 @@ class VQARADDataset(Dataset):
         img_path = self.image_dir / entry["image_name"]
         image = Image.open(img_path).convert("RGB")
 
-        # process image
-        pixel_values = self.processor(
-            images=image, return_tensors="pt"
-        )["pixel_values"].squeeze(0)
-
         # build prompt and target
         question = entry["question"].strip()
         answer = entry["answer"]
 
-        prompt = f"Question: {question}\nAnswer:"
+        prompt = f"<image>\nQuestion: {question}\nAnswer:"
         full_text = f"{prompt} {answer}"
 
-        # tokenize prompt (for masking) and full text
-        prompt_encoding = self.tokenizer(
-            prompt,
-            add_special_tokens=True,
+        # process prompt only to get prompt_len
+        prompt_inputs = self.processor(
+            text=prompt,
+            images=image,
             return_tensors="pt",
         )
-        prompt_len = prompt_encoding["input_ids"].shape[1]
+        prompt_len = prompt_inputs["input_ids"].shape[1]
 
-        full_encoding = self.tokenizer(
-            full_text,
-            max_length=self.max_length,
+        # process full text
+        full_inputs = self.processor(
+            text=full_text,
+            images=image,
             padding="max_length",
             truncation=True,
-            add_special_tokens=True,
+            max_length=self.max_length,
             return_tensors="pt",
         )
 
-        input_ids = full_encoding["input_ids"].squeeze(0)
-        attention_mask = full_encoding["attention_mask"].squeeze(0)
+        input_ids = full_inputs["input_ids"].squeeze(0)
+        attention_mask = full_inputs["attention_mask"].squeeze(0)
+        pixel_values = full_inputs["pixel_values"].squeeze(0)
 
         # loss masking: set prompt tokens to -100 so loss is only on the answer
         labels = input_ids.clone()

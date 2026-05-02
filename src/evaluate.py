@@ -106,7 +106,7 @@ def generate_predictions(model, processor, tokenizer, data, image_dir, max_new_t
         img_path = os.path.join(image_dir, entry["image_name"])
         image = Image.open(img_path).convert("RGB")
 
-        prompt = f"Question: {entry['question'].strip()}\nAnswer:"
+        prompt = f"<image>\nQuestion: {entry['question'].strip()}\nAnswer:"
 
         inputs = processor(images=image, text=prompt, return_tensors="pt")
         inputs = {k: v.to(model.device) for k, v in inputs.items()}
