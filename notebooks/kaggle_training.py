@@ -42,7 +42,7 @@ print(f"cuda available: {torch.cuda.is_available()}")
 print(f"gpu count: {torch.cuda.device_count()}")
 for i in range(torch.cuda.device_count()):
     print(f"  gpu {i}: {torch.cuda.get_device_name(i)} "
-          f"({torch.cuda.get_device_properties(i).total_mem / 1024**3:.1f} GB)")
+          f"({torch.cuda.get_device_properties(i).total_memory / 1024**3:.1f} GB)")
 
 
 # ==== CELL 3: clone repo and download dataset ====
@@ -324,7 +324,7 @@ eval_output = {
     "hardware": {
         "gpu_count": torch.cuda.device_count(),
         "gpu_name": torch.cuda.get_device_name(0),
-        "gpu_memory_gb": torch.cuda.get_device_properties(0).total_mem / 1024**3,
+        "gpu_memory_gb": torch.cuda.get_device_properties(0).total_memory / 1024**3,
         "peak_memory_gb": max(history["gpu_mem_gb"]),
     },
     "predictions": results,
