@@ -20,8 +20,8 @@ Copy tung block (cach nhau boi dong # ==== CELL ... ====) vao tung cell tren Kag
 
 # ==== CELL 1: install dependencies ====
 
-# !pip install -q torch transformers peft bitsandbytes datasets \
-#     Pillow wandb nltk rouge-score pyyaml accelerate scipy matplotlib
+!pip install -q torch transformers peft "bitsandbytes>=0.46.1" datasets \
+    Pillow wandb nltk rouge-score pyyaml accelerate scipy matplotlib
 
 
 # ==== CELL 2: setup secrets and environment ====
@@ -231,7 +231,11 @@ for epoch in range(train_cfg["num_epochs"]):
         save_path = os.path.join(paths["output_dir"], "best_model")
         model.save_pretrained(save_path)
         tokenizer.save_pretrained(save_path)
-        print(f"  saved best model (val_loss={val_loss:.4f})")
+        
+        # Backup best model len WandB cloud lien tuc de chong mat data khi Kaggle sap
+        wandb.save(os.path.join(save_path, "*"), base_path=paths["output_dir"], policy="now")
+        
+        print(f"  saved best model (val_loss={val_loss:.4f}) and backed up to wandb")
 
 print("\ntraining complete")
 
