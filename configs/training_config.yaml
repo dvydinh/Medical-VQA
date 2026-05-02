@@ -2,7 +2,7 @@
 
 model:
   name: "llava-hf/llava-1.5-7b-hf"
-  max_length: 512
+  max_length: 1024
   image_size: 336
 
 training:
