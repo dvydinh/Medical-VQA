@@ -1,0 +1,14 @@
+{
+  "version": "v2_resumed",
+  "metrics": {
+    "closed_em": 0.6812749003984063,
+    "closed_count": 251,
+    "open_bleu_1": 0.3387906946866128,
+    "open_bleu_2": 0.1596962321096241,
+    "open_bleu_3": 0.10805226364991091,
+    "open_bleu_4": 0.08089806287660274,
+    "open_rouge_l": 0.3774030218147865,
+    "open_count": 200,
+    "total_count": 451
+  }
+}
