@@ -15,7 +15,7 @@ The base model is LLaVA-1.5-7B \cite{liu2024improved}, which consists of three c
 
 \subsection{Quantization and Adapter Configuration}
 
-The language model backbone is loaded in 4-bit NF4 precision using double quantization. LoRA adapters are configured with rank $r = 16$, scaling factor $\alpha = 32$, and dropout rate of 0.05. This configuration results in approximately [PLACEHOLDER] trainable parameters, representing less than 1\% of the total model parameters.
+The language model backbone is loaded in 4-bit NF4 precision using double quantization. LoRA adapters are configured with rank $r = 16$, scaling factor $\alpha = 32$, and dropout rate of 0.05. This configuration results in approximately 19,136,512 trainable parameters, representing less than 1\% of the total model parameters.
 
 \subsection{Training Procedure}
 
