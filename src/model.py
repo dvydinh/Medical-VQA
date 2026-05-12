@@ -84,6 +84,11 @@ def load_model(
     lora_config = load_lora_config(qlora_config_path)
     model = get_peft_model(model, lora_config)
 
+    # unfreeze the vision-language projector to enable cross-modal alignment learning
+    for name, param in model.named_parameters():
+        if "multi_modal_projector" in name:
+            param.requires_grad = True
+
     print_trainable_params(model)
 
     # load processor and tokenizer

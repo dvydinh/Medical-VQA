@@ -47,3 +47,13 @@ Table~\ref{tab:results} presents the comparison between the QLoRA fine-tuned mod
 \subsection{Analysis}
 
 Qualitative analysis suggests the model is highly capable of answering binary "yes/no" questions (closed-ended) regarding the presence of abnormalities. However, for open-ended questions, generating precise medical terminology remains challenging, as reflected by the lower BLEU-4 score (0.0809). The Exact Match score highlights strong structural understanding, while the generative aspects indicate room for improvement, possibly by increasing the LoRA rank or expanding the fine-tuning dataset.
+
+\subsubsection{Error Analysis}
+
+To identify areas for future improvement, a manual review of the incorrect predictions was conducted. The errors predominantly fall into three distinct categories:
+
+\begin{itemize}
+    \item \textbf{Anatomical Misidentification:} The model struggles to differentiate between adjacent or visually similar anatomical structures. For example, it misidentified the maxillary sinuses as the cerebellum in an MRI scan.
+    \item \textbf{Spatial Reasoning Failure:} Fine-grained spatial comprehension remains a challenge. In several instances, the model confused left and right orientations despite the presence of clear anatomical markers.
+    \item \textbf{Clinical Factual Errors:} The model occasionally exhibits a lack of deep clinical knowledge. For instance, when asked whether a specific imaging modality is safe for a pregnant woman, the model incorrectly answered ``yes'', highlighting the need to better integrate factual medical knowledge into the vision-language reasoning pipeline.
+\end{itemize}
