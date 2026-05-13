@@ -30,6 +30,7 @@ def load_quantization_config(config_path: str = "configs/qlora_config.yaml"):
         bnb_4bit_quant_type=quant_cfg["bnb_4bit_quant_type"],
         bnb_4bit_compute_dtype=compute_dtype,
         bnb_4bit_use_double_quant=quant_cfg["bnb_4bit_use_double_quant"],
+        llm_int8_skip_modules=["multi_modal_projector"],
     )
 
     return bnb_config
