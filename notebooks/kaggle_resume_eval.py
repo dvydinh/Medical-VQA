@@ -60,8 +60,8 @@ api = wandb.Api()
 run = api.run("dvydinh/medicalVQA/vq6uv8at")
 
 print("Downloading best_model from WandB...")
-run.file("best_model/adapter_model.safetensors").download(root=WORK_DIR, replace=True)
-run.file("best_model/adapter_config.json").download(root=WORK_DIR, replace=True)
+run.file("best_model/adapter_model.safetensors").download(root=output_dir, replace=True)
+run.file("best_model/adapter_config.json").download(root=output_dir, replace=True)
 
 print("Download complete.")
 
