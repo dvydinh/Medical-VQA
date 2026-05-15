@@ -62,9 +62,6 @@ run = api.run("dvydinh/medicalVQA/vq6uv8at")
 print("Downloading best_model from WandB...")
 run.file("best_model/adapter_model.safetensors").download(root=WORK_DIR, replace=True)
 run.file("best_model/adapter_config.json").download(root=WORK_DIR, replace=True)
-run.file("best_model/special_tokens_map.json").download(root=WORK_DIR, replace=True)
-run.file("best_model/tokenizer.json").download(root=WORK_DIR, replace=True)
-run.file("best_model/tokenizer_config.json").download(root=WORK_DIR, replace=True)
 
 print("Download complete.")
 
