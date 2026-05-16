@@ -20,3 +20,5 @@ lora:
     - "gate_proj"
     - "up_proj"
     - "down_proj"
+    - "multi_modal_projector.linear_1"
+    - "multi_modal_projector.linear_2"

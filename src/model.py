@@ -30,7 +30,6 @@ def load_quantization_config(config_path: str = "configs/qlora_config.yaml"):
         bnb_4bit_quant_type=quant_cfg["bnb_4bit_quant_type"],
         bnb_4bit_compute_dtype=compute_dtype,
         bnb_4bit_use_double_quant=quant_cfg["bnb_4bit_use_double_quant"],
-        llm_int8_skip_modules=["multi_modal_projector.linear_1", "multi_modal_projector.linear_2"],
     )
 
     return bnb_config
@@ -84,11 +83,6 @@ def load_model(
     # apply lora
     lora_config = load_lora_config(qlora_config_path)
     model = get_peft_model(model, lora_config)
-
-    # unfreeze the vision-language projector to enable cross-modal alignment learning
-    for name, param in model.named_parameters():
-        if "multi_modal_projector" in name:
-            param.requires_grad = True
 
     print_trainable_params(model)
 
