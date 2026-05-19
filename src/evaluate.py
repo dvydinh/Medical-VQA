@@ -106,7 +106,7 @@ def generate_predictions(model, processor, tokenizer, data, image_dir, max_new_t
         img_path = os.path.join(image_dir, entry["image_name"])
         image = Image.open(img_path).convert("RGB")
 
-        prompt = f"<image>\nQuestion: {entry['question'].strip()}\nAnswer:"
+        prompt = f"A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions. USER: <image>\n{entry['question'].strip()} ASSISTANT:"
 
         inputs = processor(images=image, text=prompt, return_tensors="pt")
         inputs = {k: v.to(model.device) for k, v in inputs.items()}
@@ -197,15 +197,23 @@ def main():
     cfg = yaml.safe_load(open(args.config, "r"))
     paths = cfg["paths"]
 
-    # load model from checkpoint
-    model, processor, tokenizer = load_model(
-        model_name=cfg["model"]["name"],
-        qlora_config_path=args.qlora_config,
+    # 1. Load Base Model with bitsandbytes (without random LoRA)
+    from transformers import LlavaForConditionalGeneration, AutoProcessor, AutoTokenizer
+    from src.model import load_quantization_config
+    
+    bnb_config = load_quantization_config(args.qlora_config)
+    base_model = LlavaForConditionalGeneration.from_pretrained(
+        cfg["model"]["name"],
+        quantization_config=bnb_config,
+        device_map="auto",
+        torch_dtype=torch.float16,
     )
+    processor = AutoProcessor.from_pretrained(cfg["model"]["name"])
+    tokenizer = AutoTokenizer.from_pretrained(cfg["model"]["name"])
 
-    # load adapter weights
+    # 2. Load trained adapter weights
     from peft import PeftModel
-    model = PeftModel.from_pretrained(model, args.checkpoint)
+    model = PeftModel.from_pretrained(base_model, args.checkpoint)
 
     # load test data
     data_path = os.path.join(paths["data_dir"], "VQA_RAD_Dataset.json")
