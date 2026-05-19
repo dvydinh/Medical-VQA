@@ -81,6 +81,24 @@ def load_model(
     # prepare for kbit training (freeze base, enable gradient checkpointing)
     model = prepare_model_for_kbit_training(model)
 
+    # BUGFIX: bitsandbytes often ignores llm_int8_skip_modules in 4-bit mode.
+    # The projector gets quantized to uint8, crashing when we set requires_grad=True.
+    # We recover the unquantized FP16 projector from a temporary model instance.
+    print("recovering unquantized projector to bypass bitsandbytes bug...")
+    temp_model = LlavaForConditionalGeneration.from_pretrained(
+        model_name, torch_dtype=torch.float16, low_cpu_mem_usage=True
+    )
+    
+    # keep the original device placement
+    proj_device = next(model.multi_modal_projector.parameters()).device
+    
+    model.multi_modal_projector = temp_model.multi_modal_projector
+    model.multi_modal_projector.to(proj_device)
+    
+    del temp_model
+    import gc
+    gc.collect()
+
     # apply lora
     lora_config = load_lora_config(qlora_config_path)
     model = get_peft_model(model, lora_config)
