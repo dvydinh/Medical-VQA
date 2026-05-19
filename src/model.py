@@ -89,11 +89,11 @@ def load_model(
         model_name, torch_dtype=torch.float16, low_cpu_mem_usage=True
     )
     
-    # keep the original device placement
+    # keep the original device placement and cast to float32 for training stability
     proj_device = next(model.model.multi_modal_projector.parameters()).device
     
     model.model.multi_modal_projector = temp_model.model.multi_modal_projector
-    model.model.multi_modal_projector.to(proj_device)
+    model.model.multi_modal_projector.to(device=proj_device, dtype=torch.float32)
     
     del temp_model
     import gc
