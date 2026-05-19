@@ -90,10 +90,10 @@ def load_model(
     )
     
     # keep the original device placement
-    proj_device = next(model.multi_modal_projector.parameters()).device
+    proj_device = next(model.model.multi_modal_projector.parameters()).device
     
-    model.multi_modal_projector = temp_model.multi_modal_projector
-    model.multi_modal_projector.to(proj_device)
+    model.model.multi_modal_projector = temp_model.model.multi_modal_projector
+    model.model.multi_modal_projector.to(proj_device)
     
     del temp_model
     import gc
