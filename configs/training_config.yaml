@@ -2,13 +2,13 @@
 
 model:
   name: "llava-hf/llava-1.5-7b-hf"
-  max_length: 1024
+  max_length: 768
   image_size: 336
 
 training:
   num_epochs: 5
-  batch_size: 4
-  gradient_accumulation_steps: 4
+  batch_size: 8
+  gradient_accumulation_steps: 2
   learning_rate: 2.0e-5
   weight_decay: 0.01
   warmup_ratio: 0.1
