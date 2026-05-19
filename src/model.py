@@ -98,6 +98,9 @@ def load_model(
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.pad_token_id = tokenizer.eos_token_id
+    
+    # CRITICAL FIX: enforce right padding for training so that labels[:prompt_len] = -100 correctly masks the prompt
+    tokenizer.padding_side = "right"
 
     return model, processor, tokenizer
 
