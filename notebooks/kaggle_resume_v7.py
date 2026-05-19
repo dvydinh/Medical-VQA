@@ -1,17 +1,19 @@
 """
-Medical VQA - QLoRA Fine-tuning V6 on Kaggle (T4 x2)
+Medical VQA - QLoRA Fine-tuning V7 (RESUME TRAINING) on Kaggle (T4 x2)
 
-V6: GOLD STANDARD
-  1. Differential Learning Rates: LoRA (LLM)=5e-5, Projector (full-weights)=2e-6
-  2. Vicuna v1 Prompt Template: properly aligned instruction-following structure.
+Pipeline:
+  1. install dependencies
+  2. clone repo + download dataset
+  3. download latest_model from WandB
+  4. RESUME training with QLoRA (LoRA-injected Projector)
+  5. evaluate
+  6. export plots and results
+  7. push results to github (results_v7/)
 
 Yeu cau:
   - GPU: T4 x2
   - Kaggle Secrets: WANDB_API_KEY, GITHUB_TOKEN
-
-Copy tung block vao tung cell tren Kaggle.
 """
-
 
 # ==== CELL 1: install dependencies ====
 
@@ -24,7 +26,6 @@ Copy tung block vao tung cell tren Kaggle.
 import os
 import json
 from pathlib import Path
-
 from kaggle_secrets import UserSecretsClient
 
 secrets = UserSecretsClient()
@@ -46,26 +47,56 @@ WORK_DIR = "/kaggle/working/Medical-VQA"
 
 os.system(f"git clone {REPO_URL} {WORK_DIR}")
 os.chdir(WORK_DIR)
-
 os.system('git config user.name "dvydinh"')
 os.system('git config user.email "doanvy.dinh27@gmail.com"')
-
 os.system("python scripts/download_data.py")
-
-
-# ==== CELL 4: validate dataset ====
-
 os.system("python scripts/validate_data.py")
 
 
-# ==== CELL 5: train with differential learning rates ====
+# ==== CELL 4: download latest_model from wandb ====
+
+import wandb
+import yaml
+
+with open("configs/training_config.yaml", "r") as f:
+    cfg = yaml.safe_load(f)
+
+output_dir = cfg["paths"]["output_dir"]
+latest_model_dir = os.path.join(output_dir, "latest_model")
+os.makedirs(latest_model_dir, exist_ok=True)
+
+api = wandb.Api()
+runs = api.runs("dvydinh/medicalVQA", filters={"display_name": "qlora-llava-vqa-rad-v7"})
+run = runs[0]
+print(f"found run: {run.id} ({run.name}), state: {run.state}")
+
+print("downloading latest_model from wandb...")
+files_to_download = [
+    "adapter_model.safetensors",
+    "adapter_config.json",
+    "optimizer.pt",
+    "scheduler.pt",
+    "training_state.json",
+    "special_tokens_map.json",
+    "tokenizer_config.json",
+    "tokenizer.json",
+    "tokenizer.model"
+]
+
+for file in files_to_download:
+    try:
+        run.file(f"latest_model/{file}").download(root=output_dir, replace=True)
+    except Exception as e:
+        print(f"skipping {file}: {e}")
+
+print("download complete.")
+
+
+# ==== CELL 5: resume training ====
 
 import sys
 import time
-import yaml
-import torch
-import wandb
-import matplotlib.pyplot as plt
+from peft import PeftModel
 from torch.optim import AdamW
 from transformers import get_cosine_schedule_with_warmup
 
@@ -73,25 +104,29 @@ sys.path.insert(0, WORK_DIR)
 from src.model import load_model
 from src.dataset import get_dataloaders
 
-with open("configs/training_config.yaml", "r") as f:
-    cfg = yaml.safe_load(f)
-
 with open("configs/qlora_config.yaml", "r") as f:
     qlora_cfg = yaml.safe_load(f)
 
 train_cfg = cfg["training"]
 paths = cfg["paths"]
 
+# Find the run ID to resume exactly to the same WandB chart
+resume_run_id = run.id
+
 wandb.init(
     project=cfg["logging"]["wandb_project"],
-    config={**cfg, **qlora_cfg, "lora_lr": 5e-5, "projector_lr": 2e-6, "prompt_template": "vicuna_v1"},
-    name="qlora-llava-vqa-rad-v7",
+    id=resume_run_id,
+    resume="must"
 )
 
-model, processor, tokenizer = load_model(
+# Load base model
+base_model, processor, tokenizer = load_model(
     model_name=cfg["model"]["name"],
     qlora_config_path="configs/qlora_config.yaml",
 )
+
+# Load PEFT adapter (with is_trainable=True to continue training)
+model = PeftModel.from_pretrained(base_model, latest_model_dir, is_trainable=True)
 
 data_path = os.path.join(paths["data_dir"], "VQA_RAD_Dataset.json")
 image_dir = os.path.join(paths["data_dir"], "images")
@@ -105,27 +140,11 @@ train_loader, test_loader = get_dataloaders(
     max_length=cfg["model"]["max_length"],
 )
 
-lora_params = []
-projector_params = []
-
-for name, param in model.named_parameters():
-    if not param.requires_grad:
-        continue
-    if "multi_modal_projector" in name:
-        projector_params.append(param)
-    else:
-        lora_params.append(param)
-
-print(f"lora params: {sum(p.numel() for p in lora_params):,}")
-print(f"projector params: {sum(p.numel() for p in projector_params):,}")
-
-LORA_LR = 5e-5
-PROJECTOR_LR = 2e-6
-
-optimizer = AdamW([
-    {"params": lora_params, "lr": LORA_LR},
-    {"params": projector_params, "lr": PROJECTOR_LR},
-], weight_decay=train_cfg["weight_decay"])
+optimizer = AdamW(
+    model.parameters(),
+    lr=train_cfg["learning_rate"],
+    weight_decay=train_cfg["weight_decay"],
+)
 
 num_training_steps = (
     len(train_loader) // train_cfg["gradient_accumulation_steps"]
@@ -140,17 +159,23 @@ scheduler = get_cosine_schedule_with_warmup(
 
 device = next(model.parameters()).device
 accum_steps = train_cfg["gradient_accumulation_steps"]
-history = {"train_loss": [], "val_loss": [], "lr": [], "gpu_mem_gb": []}
 
-os.makedirs(paths["output_dir"], exist_ok=True)
-best_val_loss = float("inf")
-global_step = 0
+# Load state
+try:
+    optimizer.load_state_dict(torch.load(os.path.join(latest_model_dir, "optimizer.pt")))
+    scheduler.load_state_dict(torch.load(os.path.join(latest_model_dir, "scheduler.pt")))
+    with open(os.path.join(latest_model_dir, "training_state.json"), "r") as f:
+        training_state = json.load(f)
+    start_epoch = training_state["epoch"]
+    global_step = training_state["global_step"]
+    best_val_loss = training_state["best_val_loss"]
+    history = training_state["history"]
+    print(f"\nResuming from Epoch {start_epoch}, Step {global_step}")
+except Exception as e:
+    print(f"Error loading state, cannot resume: {e}")
+    sys.exit(1)
 
-print(f"\nstarting training: {train_cfg['num_epochs']} epochs, "
-      f"{len(train_loader)} steps/epoch")
-print(f"lora lr: {LORA_LR}, projector lr: {PROJECTOR_LR}")
-
-for epoch in range(train_cfg["num_epochs"]):
+for epoch in range(start_epoch, train_cfg["num_epochs"]):
     model.train()
     epoch_loss = 0.0
     start_time = time.time()
@@ -188,8 +213,7 @@ for epoch in range(train_cfg["num_epochs"]):
             wandb.log({
                 "train/loss": avg,
                 "train/step_loss": outputs.loss.item(),
-                "learning_rate/lora": scheduler.get_last_lr()[0],
-                "learning_rate/projector": scheduler.get_last_lr()[1],
+                "learning_rate": lr,
                 "cuda/memory_allocated_gb": mem,
                 "global_step": global_step,
             })
@@ -236,7 +260,6 @@ for epoch in range(train_cfg["num_epochs"]):
     torch.save(optimizer.state_dict(), os.path.join(latest_path, "optimizer.pt"))
     torch.save(scheduler.state_dict(), os.path.join(latest_path, "scheduler.pt"))
     
-    import json
     training_state = {
         "epoch": epoch + 1,
         "global_step": global_step,
@@ -256,8 +279,7 @@ for epoch in range(train_cfg["num_epochs"]):
         tokenizer.save_pretrained(save_path)
 
         wandb.save(os.path.join(save_path, "*"), base_path=paths["output_dir"], policy="now")
-
-        print(f"  saved best model (val_loss={val_loss:.4f}) to wandb")
+        print(f"  saved best model (val_loss={val_loss:.4f}) and backed up to wandb")
 
 print("\ntraining complete")
 
@@ -334,8 +356,6 @@ eval_output = {
     "metrics": metrics,
     "training_history": history,
     "config": cfg,
-    "prompt_template": "vicuna_v1",
-    "differential_lr": {"lora": LORA_LR, "projector": PROJECTOR_LR},
     "hardware": {
         "gpu_count": torch.cuda.device_count(),
         "gpu_name": torch.cuda.get_device_name(0),

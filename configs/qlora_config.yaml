@@ -7,8 +7,8 @@ quantization:
   bnb_4bit_use_double_quant: true
 
 lora:
-  r: 16
-  lora_alpha: 32
+  r: 128
+  lora_alpha: 256
   lora_dropout: 0.05
   bias: "none"
   task_type: "CAUSAL_LM"
@@ -20,3 +20,5 @@ lora:
     - "gate_proj"
     - "up_proj"
     - "down_proj"
+  modules_to_save:
+    - "multi_modal_projector"
