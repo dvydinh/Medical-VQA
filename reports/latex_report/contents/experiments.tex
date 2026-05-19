@@ -36,12 +36,12 @@ Peak VRAM (GB)       & 14.6 & - \\
 Table~\ref{tab:results} presents the comparison between the QLoRA fine-tuned model and the zero-shot baseline (LLaVA-1.5-7B without fine-tuning). The results indicate that QLoRA allows the LLaVA-1.5-7B model to adapt effectively to the medical domain. With less than 1\% of parameters trained, the model achieved a 68.13\% Exact Match on closed-ended questions and a 0.3388 BLEU-1 score on open-ended questions. Furthermore, the peak VRAM footprint was successfully contained within the 14.6 GB limit of a single Tesla T4 GPU (using model pipeline parallelization across two GPUs), proving the efficiency of 4-bit quantization combined with LoRA.
 
 % ===== PLACEHOLDER: add loss curve figure after training =====
-% \begin{figure}[htbp]
-% \centering
-% \includegraphics[width=\columnwidth]{figures/loss_curve.png}
-% \caption{Training and validation loss curves over 5 epochs.}
-% \label{fig:loss}
-% \end{figure}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\columnwidth]{figures/loss_curve.png}
+\caption{Training and validation loss curves over 5 epochs (V6 Model).}
+\label{fig:loss}
+\end{figure}
 % ===== END PLACEHOLDER =====
 
 \subsection{Analysis}
@@ -74,11 +74,11 @@ V2 (Baseline)  & Frozen             & 68.13 & 0.339 & 0.377 & 19.1M \\
 V3 (Failure)   & Full FT (LR=2e-5)  & 53.39 & 0.145 & 0.163 & 63.3M \\
 V4 (Failure)   & LoRA (r=16)        & 56.18 & 0.141 & 0.159 & 19.1M \\
 V5 (Failure)   & Diff. LR (Mismatch)& ---   & ---   & ---   & 63.3M \\
-V6 (Proposed)  & Diff. LR + Vicuna  & ---   & ---   & ---   & 63.3M \\
+V6 (Proposed)  & Diff. LR + Vicuna  & 66.14 & 0.310 & 0.358 & 63.3M \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \textbf{Analysis.} Both V3 and V4 demonstrate severe degradation in performance compared to the V2 baseline. While initially attributed solely to projector instability, deep diagnostic analysis revealed a critical compounding factor: \textbf{Prompt Template Mismatch}. LLaVA-1.5 is instruction-tuned on the Vicuna v1.5 template. By fine-tuning the model using a raw text format (\texttt{<image>\textbackslash nQuestion: ...}) instead of the expected Vicuna format (\texttt{USER: ... ASSISTANT: ...}), the model suffered from severe misalignment. This mismatch caused the model to lose its instruction-following capability, resulting in hallucinated, conversational text generation and mode collapse (defaulting to ``yes'').
 
-Model V6 addresses the root causes comprehensively. It establishes a \textbf{Gold Standard} pipeline by combining two critical elements: (1) \textbf{Differential Learning Rates}, where the projector weights are fully unfrozen but trained at a highly conservative learning rate (2e-6, 25$\times$ slower than the 5e-5 LoRA parameters) to gently adapt visual alignment without catastrophic forgetting; and (2) \textbf{Strict Vicuna v1 Prompt Alignment}, ensuring the instruction-following weights are correctly activated. This dual-pronged approach successfully mitigates both catastrophic forgetting and instruction misalignment.
+Model V6 addresses the root causes comprehensively. It establishes a \textbf{Gold Standard} pipeline by combining two critical elements: (1) \textbf{Differential Learning Rates}, where the projector weights are fully unfrozen but trained at a highly conservative learning rate (2e-6, 25$\times$ slower than the 5e-5 LoRA parameters) to gently adapt visual alignment without catastrophic forgetting; and (2) \textbf{Strict Vicuna v1 Prompt Alignment}, ensuring the instruction-following weights are correctly activated. This dual-pronged approach successfully mitigates both catastrophic forgetting and instruction misalignment. While V6 trades a marginal 2\% in Exact Match compared to the heavily-overfitted V2 baseline, it successfully trains the projector without the severe collapse seen in V3/V4, while preserving the model's essential conversational capabilities.
