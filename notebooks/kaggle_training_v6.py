@@ -228,6 +228,13 @@ for epoch in range(train_cfg["num_epochs"]):
           f"train: {train_loss:.4f} | val: {val_loss:.4f} | "
           f"time: {elapsed/60:.1f}min | gpu: {current_mem:.1f}GB")
 
+    # SAVE LATEST MODEL EVERY EPOCH
+    latest_path = os.path.join(paths["output_dir"], "latest_model")
+    model.save_pretrained(latest_path)
+    tokenizer.save_pretrained(latest_path)
+    wandb.save(os.path.join(latest_path, "*"), base_path=paths["output_dir"], policy="now")
+    print("  saved latest model to wandb")
+
     if val_loss < best_val_loss:
         best_val_loss = val_loss
         save_path = os.path.join(paths["output_dir"], "best_model")
@@ -236,7 +243,7 @@ for epoch in range(train_cfg["num_epochs"]):
 
         wandb.save(os.path.join(save_path, "*"), base_path=paths["output_dir"], policy="now")
 
-        print(f"  saved best model (val_loss={val_loss:.4f}) and backed up to wandb")
+        print(f"  saved best model (val_loss={val_loss:.4f}) to wandb")
 
 print("\ntraining complete")
 
