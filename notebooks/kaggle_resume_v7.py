@@ -394,7 +394,7 @@ os.system('git status')
 COMMIT_DATE = "2026-05-19T10:00:00+07:00"
 commit_cmd = (
     f'git -c "user.name=dvydinh" -c "user.email=doanvy.dinh27@gmail.com" '
-    f'commit -m "add v7 results (Epochs=15, LoRA_r=128)" '
+    f'commit -m "add v7 results (Epochs=10, LoRA_r=128)" '
     f'--date="{COMMIT_DATE}"'
 )
 os.environ["GIT_COMMITTER_DATE"] = COMMIT_DATE
