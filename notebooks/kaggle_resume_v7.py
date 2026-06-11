@@ -129,6 +129,11 @@ base_model, processor, tokenizer = load_model(
 # Load PEFT adapter (with is_trainable=True to continue training)
 model = PeftModel.from_pretrained(base_model, latest_model_dir, is_trainable=True)
 
+# Manually unfreeze projector, as PeftModel only unfreezes LoRA adapters
+for name, param in model.named_parameters():
+    if "multi_modal_projector" in name:
+        param.requires_grad = True
+
 data_path = os.path.join(paths["data_dir"], "VQA_RAD_Dataset.json")
 image_dir = os.path.join(paths["data_dir"], "images")
 
