@@ -141,11 +141,24 @@ train_loader, test_loader = get_dataloaders(
     max_length=cfg["model"]["max_length"],
 )
 
-optimizer = AdamW(
-    model.parameters(),
-    lr=train_cfg["learning_rate"],
-    weight_decay=train_cfg["weight_decay"],
-)
+lora_params = []
+projector_params = []
+
+for name, param in model.named_parameters():
+    if not param.requires_grad:
+        continue
+    if "multi_modal_projector" in name:
+        projector_params.append(param)
+    else:
+        lora_params.append(param)
+
+LORA_LR = 5e-5
+PROJECTOR_LR = 2e-6
+
+optimizer = AdamW([
+    {"params": lora_params, "lr": LORA_LR},
+    {"params": projector_params, "lr": PROJECTOR_LR},
+], weight_decay=train_cfg["weight_decay"])
 
 num_training_steps = (
     len(train_loader) // train_cfg["gradient_accumulation_steps"]
