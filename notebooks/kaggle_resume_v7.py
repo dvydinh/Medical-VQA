@@ -123,6 +123,7 @@ wandb.init(
 base_model, processor, tokenizer = load_model(
     model_name=cfg["model"]["name"],
     qlora_config_path="configs/qlora_config.yaml",
+    apply_peft=False,
 )
 
 # Load PEFT adapter (with is_trainable=True to continue training)

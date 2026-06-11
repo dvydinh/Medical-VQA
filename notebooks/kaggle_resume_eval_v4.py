@@ -87,6 +87,7 @@ print(f"test samples: {len(test_data)}")
 base_model, processor, tokenizer = load_model(
     model_name=cfg["model"]["name"],
     qlora_config_path="configs/qlora_config.yaml",
+    apply_peft=False,
 )
 
 model = PeftModel.from_pretrained(base_model, best_model_dir)

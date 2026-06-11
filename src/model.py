@@ -59,6 +59,7 @@ def load_model(
     model_name: str = "llava-hf/llava-1.5-7b-hf",
     qlora_config_path: str = "configs/qlora_config.yaml",
     device_map: str = "auto",
+    apply_peft: bool = True,
 ):
     """
     Load LLaVA model with 4-bit quantization and LoRA adapters.
@@ -99,15 +100,16 @@ def load_model(
     import gc
     gc.collect()
 
-    # apply lora
-    lora_config = load_lora_config(qlora_config_path)
-    model = get_peft_model(model, lora_config)
+    if apply_peft:
+        # apply lora
+        lora_config = load_lora_config(qlora_config_path)
+        model = get_peft_model(model, lora_config)
 
-    for name, param in model.named_parameters():
-        if "multi_modal_projector" in name:
-            param.requires_grad = True
+        for name, param in model.named_parameters():
+            if "multi_modal_projector" in name:
+                param.requires_grad = True
 
-    print_trainable_params(model)
+        print_trainable_params(model)
 
     # load processor and tokenizer
     processor = AutoProcessor.from_pretrained(model_name)
