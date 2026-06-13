@@ -139,3 +139,23 @@ def print_trainable_params(model):
     print(
         f"trainable params: {trainable:,} / {total:,} ({pct:.2f}%)"
     )
+
+
+def apply_neftune(model, alpha=5.0):
+    """
+    Applies NEFTune (Noise Embedding Fine-Tuning) to the model's embedding layer.
+    Adds uniform noise to text embeddings during training to reduce overfitting.
+    """
+    embeddings = model.get_input_embeddings()
+    
+    def neftune_hook(module, input, output):
+        if module.training:
+            dims = torch.tensor(output.size(1) * output.size(2), device=output.device, dtype=output.dtype)
+            mag_norm = alpha / torch.sqrt(dims)
+            noise = (torch.rand_like(output) * 2 - 1) * mag_norm
+            return output + noise
+        return output
+        
+    hook_handle = embeddings.register_forward_hook(neftune_hook)
+    print(f"NEFTune hook registered with alpha={alpha}")
+    return hook_handle
