@@ -20,33 +20,33 @@
 \toprule
 \textbf{Metric} & \textbf{QLoRA (ours)} & \textbf{Zero-shot} \\
 \midrule
-Closed EM (\%)       & 68.13 & - \\
-Open BLEU-1          & 0.3388 & - \\
-Open BLEU-4          & 0.0809 & - \\
-Open ROUGE-L         & 0.3774 & - \\
+Closed EM (\%)       & 72.91 & - \\
+Open BLEU-1          & 0.3240 & - \\
+Open BLEU-4          & 0.0738 & - \\
+Open ROUGE-L         & 0.3553 & - \\
 \midrule
-Trainable params     & 19.1M & N/A \\
-Training time        & $\sim$2.5 hours & N/A \\
+Trainable params     & 359.6M & N/A \\
+Training time        & $\sim$11 hours & N/A \\
 Peak VRAM (GB)       & 14.6 & - \\
 \bottomrule
 \end{tabular}
 \end{table}
 % ===== END PLACEHOLDER =====
 
-Table~\ref{tab:results} presents the comparison between the QLoRA fine-tuned model and the zero-shot baseline (LLaVA-1.5-7B without fine-tuning). The results indicate that QLoRA allows the LLaVA-1.5-7B model to adapt effectively to the medical domain. With less than 1\% of parameters trained, the model achieved a 68.13\% Exact Match on closed-ended questions and a 0.3388 BLEU-1 score on open-ended questions. Furthermore, the peak VRAM footprint was successfully contained within the 14.6 GB limit of a single Tesla T4 GPU (using model pipeline parallelization across two GPUs), proving the efficiency of 4-bit quantization combined with LoRA.
+Table~\ref{tab:results} presents the comparison between the QLoRA fine-tuned model and the zero-shot baseline (LLaVA-1.5-7B without fine-tuning). The results indicate that QLoRA allows the LLaVA-1.5-7B model to adapt effectively to the medical domain. With the increased LoRA rank (128) and unfreezing of the multi-modal projector, the model achieved a 72.91\% Exact Match on closed-ended questions and a 0.3240 BLEU-1 score on open-ended questions. Furthermore, the peak VRAM footprint was successfully contained within the 14.6 GB limit of a single Tesla T4 GPU (using model pipeline parallelization across two GPUs), proving the efficiency of 4-bit quantization combined with LoRA.
 
 % ===== PLACEHOLDER: add loss curve figure after training =====
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\columnwidth]{figures/loss_curve.png}
-\caption{Training and validation loss curves over 5 epochs (V6 Model).}
+\caption{Training and validation loss curves over 10 epochs (V7 Model).}
 \label{fig:loss}
 \end{figure}
 % ===== END PLACEHOLDER =====
 
 \subsection{Analysis}
 
-Qualitative analysis suggests the model is highly capable of answering binary "yes/no" questions (closed-ended) regarding the presence of abnormalities. However, for open-ended questions, generating precise medical terminology remains challenging, as reflected by the lower BLEU-4 score (0.0809). The Exact Match score highlights strong structural understanding, while the generative aspects indicate room for improvement, possibly by increasing the LoRA rank or expanding the fine-tuning dataset.
+Qualitative analysis suggests the model is highly capable of answering binary "yes/no" questions (closed-ended) regarding the presence of abnormalities. However, for open-ended questions, generating precise medical terminology remains challenging, as reflected by the lower BLEU-4 score (0.0738). The Exact Match score highlights strong structural understanding, while the generative aspects indicate room for improvement, possibly by expanding the fine-tuning dataset.
 
 \subsubsection{Error Analysis}
 
