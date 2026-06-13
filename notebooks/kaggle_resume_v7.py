@@ -323,6 +323,8 @@ print_metrics(metrics)
 
 # ==== CELL 7: generate plots and save results ====
 
+import matplotlib.pyplot as plt
+
 results_dir = Path(WORK_DIR) / "results_v7"
 figures_dir = results_dir / "figures"
 figures_dir.mkdir(parents=True, exist_ok=True)
